@@ -76,7 +76,7 @@ const CelebrationCard = ({ type, user, years }) => {
 };
 
 const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
-    const { attendance, attendanceHistory, timesheets } = data;
+    const { attendance, attendanceHistory, timesheets, holidays = [] } = data;
     const [elapsedTime, setElapsedTime] = useState('00:00:00');
 
 
@@ -123,13 +123,15 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
         const dayTimesheets = timesheets.filter(ts => ts.date === dateStr);
         const totalHours = dayTimesheets.reduce((acc, curr) => acc + (curr.hours || 0), 0);
         const att = attendanceHistory.find(ah => ah.date === dateStr);
+        const isHoliday = holidays.find(h => h.date === dateStr);
 
         let status = 'none';
-        if (totalHours >= 8) status = 'completed';
+        if (isHoliday) status = 'holiday';
+        else if (totalHours >= 8) status = 'completed';
         else if (totalHours > 4) status = 'under';
         else if (totalHours > 0 || att) status = 'half';
 
-        return { hours: totalHours, status };
+        return { hours: totalHours, status, isHoliday };
     };
 
     return (
@@ -200,6 +202,9 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
                                 } else if (data.status === 'under') {
                                     styles.background = '#fffbeb';
                                     styles.border = '1px solid #f59e0b';
+                                } else if (data.status === 'holiday') {
+                                    styles.background = '#f3e8ff';
+                                    styles.border = '1px solid #d8b4fe';
                                 }
 
                                 return styles;
@@ -214,7 +219,7 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
                                                 width: '6px',
                                                 height: '6px',
                                                 borderRadius: '50%',
-                                                background: data.status === 'completed' ? '#10b981' : data.status === 'under' ? '#f59e0b' : '#94a3b8'
+                                                background: data.status === 'completed' ? '#10b981' : data.status === 'under' ? '#f59e0b' : data.status === 'holiday' ? '#a855f7' : '#94a3b8'
                                             }} />
                                             {data.hours > 0 && (
                                                 <span style={{ fontSize: '11px', fontWeight: '800', color: '#1e293b' }}>{data.hours}h</span>
@@ -230,7 +235,8 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
                         {[
                             { color: '#10b981', label: '100% completed' },
                             { color: '#f59e0b', label: 'Under required' },
-                            { color: '#94a3b8', label: 'Half day / Leave' }
+                            { color: '#94a3b8', label: 'Half day / Leave' },
+                            { color: '#a855f7', label: 'Public Holiday' }
                         ].map(item => (
                             <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }} />

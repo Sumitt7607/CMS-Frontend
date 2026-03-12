@@ -24,12 +24,14 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         { id: 'leave', label: 'Leave Requests', icon: Calendar },
         { id: 'holidays', label: 'Holidays', icon: Gift },
         { id: 'payroll', label: 'Payroll', icon: DollarSign },
+        { id: 'templates', label: 'Templates', icon: FileText, isExternal: true, url: 'https://www.portfolio.manshulearning.com/Index.html' },
     ] : [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
         { id: 'attendance', label: 'Timesheet', icon: Clock },
         { id: 'leave', label: 'Leave & Comp Off', icon: Calendar },
         { id: 'holidays', label: 'Holidays', icon: Gift },
         { id: 'payroll', label: 'Payroll', icon: DollarSign },
+        { id: 'templates', label: 'Templates', icon: FileText, isExternal: true, url: 'https://www.portfolio.manshulearning.com/Index.html' },
     ];
 
     return (
@@ -48,7 +50,13 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                     return (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => {
+                                if (item.isExternal) {
+                                    window.open(item.url, '_blank', 'noopener,noreferrer');
+                                } else {
+                                    setActiveTab(item.id);
+                                }
+                            }}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',

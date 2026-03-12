@@ -16,12 +16,8 @@ const AdminTimesheet = () => {
         project: '',
         module: '',
         phase: '',
-        date: new Date().toISOString().split('T')[0],
-        hours: '',
-        comment: ''
+        date: new Date().toISOString().split('T')[0]
     });
-    const [editingComment, setEditingComment] = useState({ id: '', text: '' });
-    const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
     const [error, setError] = useState('');
 
     const { token } = useAuth();
@@ -67,19 +63,6 @@ const AdminTimesheet = () => {
         }
     };
 
-    const handleCommentUpdate = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.put(`${API_URL}/timesheets/${editingComment.id}/comment`, { comment: editingComment.text }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setIsCommentModalOpen(false);
-            fetchEntries();
-        } catch (err) {
-            console.error('Error updating comment:', err);
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -93,9 +76,7 @@ const AdminTimesheet = () => {
                 project: '',
                 module: '',
                 phase: '',
-                date: new Date().toISOString().split('T')[0],
-                hours: '',
-                comment: ''
+                date: new Date().toISOString().split('T')[0]
             });
             fetchEntries();
         } catch (err) {
@@ -159,8 +140,6 @@ const AdminTimesheet = () => {
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Module</th>
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phase</th>
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</th>
-                                <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hours</th>
-                                <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Comment</th>
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
                                 <th style={{ padding: '16px 24px', textAlign: 'right', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
                             </tr>
@@ -184,22 +163,6 @@ const AdminTimesheet = () => {
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>
                                             <span style={{ color: '#64748b', fontSize: '14px' }}>{entry.date}</span>
-                                        </td>
-                                        <td style={{ padding: '12px 24px' }}>
-                                            <span style={{ fontWeight: '800', color: '#1e293b', fontSize: '14px' }}>{entry.hours}h</span>
-                                        </td>
-                                        <td style={{ padding: '16px 24px', maxWidth: '200px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ color: '#64748b', fontSize: '13px', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                    {entry.comment || 'No comment'}
-                                                </span>
-                                                <button
-                                                    onClick={() => { setEditingComment({ id: entry._id, text: entry.comment || '' }); setIsCommentModalOpen(true); }}
-                                                    style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '4px' }}
-                                                >
-                                                    <Hash size={14} />
-                                                </button>
-                                            </div>
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>
                                             <span style={{
@@ -341,75 +304,9 @@ const AdminTimesheet = () => {
                                     />
                                 </div>
 
-                                <div>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>
-                                        <Clock size={14} /> Hours
-                                    </label>
-                                    <input
-                                        type="number"
-                                        required
-                                        min="1"
-                                        max="24"
-                                        value={formData.hours}
-                                        onChange={(e) => setFormData({ ...formData, hours: e.target.value })}
-                                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', outline: 'none', fontSize: '14px', background: 'var(--bg-main)' }}
-                                        placeholder="8"
-                                    />
-                                </div>
-
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>
-                                        Comment
-                                    </label>
-                                    <textarea
-                                        value={formData.comment}
-                                        onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-                                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', outline: 'none', fontSize: '14px', background: 'var(--bg-main)', minHeight: '80px', resize: 'vertical' }}
-                                        placeholder="Add a comment..."
-                                    />
-                                </div>
-
                                 <div style={{ display: 'flex', gap: '12px', marginTop: '12px', gridColumn: 'span 2' }}>
                                     <button type="button" onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', background: 'transparent', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
                                     <button type="submit" className="btn-primary" style={{ flex: 1, padding: '14px' }}>Submit Entry</button>
-                                </div>
-                            </form>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Edit Comment Modal */}
-            <AnimatePresence>
-                {isCommentModalOpen && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="card"
-                            style={{ width: '100%', maxWidth: '500px', padding: '32px', position: 'relative' }}
-                        >
-                            <button onClick={() => setIsCommentModalOpen(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                                <X size={20} />
-                            </button>
-
-                            <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px', color: 'var(--text-main)' }}>Edit Comment</h2>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Update the comment for this timesheet entry.</p>
-
-                            <form onSubmit={handleCommentUpdate}>
-                                <div style={{ marginBottom: '24px' }}>
-                                    <textarea
-                                        value={editingComment.text}
-                                        onChange={(e) => setEditingComment({ ...editingComment, text: e.target.value })}
-                                        style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', outline: 'none', fontSize: '14px', background: 'var(--bg-main)', minHeight: '120px', resize: 'vertical' }}
-                                        placeholder="Enter comment..."
-                                    />
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <button type="button" onClick={() => setIsCommentModalOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'transparent', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
-                                    <button type="submit" className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '10px' }}>Save Changes</button>
                                 </div>
                             </form>
                         </motion.div>

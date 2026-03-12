@@ -28,8 +28,6 @@ const EmployeeList = () => {
     const { token } = useAuth();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-    const positions = ['Software Engineer', 'HR', 'Marketing', 'Design', 'Project Manager', 'QA Engineer'];
-    const departments = ['Engineering', 'Human Resources', 'Sales', 'Marketing', 'Operations'];
 
     useEffect(() => {
         fetchEmployees();
@@ -275,28 +273,28 @@ const EmployeeList = () => {
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-main)' }}>
                                         <Briefcase size={14} /> Department
                                     </label>
-                                    <select
+                                    <input
+                                        type="text"
                                         value={formData.department}
                                         onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                                         style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', outline: 'none', fontSize: '14px', background: 'var(--bg-main)' }}
-                                    >
-                                        <option value="">Select Department</option>
-                                        {departments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
-                                    </select>
+                                        placeholder="Engineering"
+                                        required
+                                    />
                                 </div>
 
                                 <div>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-main)' }}>
                                         <Tag size={14} /> Position
                                     </label>
-                                    <select
+                                    <input
+                                        type="text"
                                         value={formData.position}
                                         onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                                         style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', outline: 'none', fontSize: '14px', background: 'var(--bg-main)' }}
-                                    >
-                                        <option value="">Select Position</option>
-                                        {positions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
-                                    </select>
+                                        placeholder="Software Engineer"
+                                        required
+                                    />
                                 </div>
 
                                 <div>

@@ -157,28 +157,6 @@ const AdminOverview = ({ setActiveTab }) => {
                     </div>
                 </div>
 
-                <div className="card" style={{ padding: '24px', gridColumn: 'span 2' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>Key Highlight Teams</h3>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-                        {[
-                            { name: 'Engineering', count: employees.filter(e => e.department === 'Engineering').length || 42, color: '#2563eb' },
-                            { name: 'HR', count: employees.filter(e => e.department === 'HR').length || 8, color: '#ec4899' },
-                            { name: 'Design', count: employees.filter(e => e.department === 'Design').length || 15, color: '#8b5cf6' }
-                        ].map((team, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', background: 'var(--bg-subtle)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${team.color}10`, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: team.color }}>
-                                    <Layers size={20} />
-                                </div>
-                                <div>
-                                    <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-main)' }}>{team.name} Team</p>
-                                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{team.count} Active Members</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
         </div>
     );

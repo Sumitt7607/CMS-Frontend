@@ -121,17 +121,14 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
         if (!day) return null;
         const dateStr = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         const dayTimesheets = timesheets.filter(ts => ts.date === dateStr);
-        const totalHours = dayTimesheets.reduce((acc, curr) => acc + (curr.hours || 0), 0);
         const att = attendanceHistory.find(ah => ah.date === dateStr);
         const isHoliday = holidays.find(h => h.date === dateStr);
 
         let status = 'none';
         if (isHoliday) status = 'holiday';
-        else if (totalHours >= 8) status = 'completed';
-        else if (totalHours > 4) status = 'under';
-        else if (totalHours > 0 || att) status = 'half';
+        else if (att) status = 'completed';
 
-        return { hours: totalHours, status, isHoliday };
+        return { status, isHoliday };
     };
 
     return (
@@ -199,9 +196,6 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
                                 } else if (data.status === 'completed') {
                                     styles.background = '#f0fdf4';
                                     styles.border = '1px solid #10b981';
-                                } else if (data.status === 'under') {
-                                    styles.background = '#fffbeb';
-                                    styles.border = '1px solid #f59e0b';
                                 } else if (data.status === 'holiday') {
                                     styles.background = '#f3e8ff';
                                     styles.border = '1px solid #d8b4fe';
@@ -219,11 +213,8 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
                                                 width: '6px',
                                                 height: '6px',
                                                 borderRadius: '50%',
-                                                background: data.status === 'completed' ? '#10b981' : data.status === 'under' ? '#f59e0b' : data.status === 'holiday' ? '#a855f7' : '#94a3b8'
+                                                background: data.status === 'completed' ? '#10b981' : data.status === 'holiday' ? '#a855f7' : '#94a3b8'
                                             }} />
-                                            {data.hours > 0 && (
-                                                <span style={{ fontSize: '11px', fontWeight: '800', color: '#1e293b' }}>{data.hours}h</span>
-                                            )}
                                         </>
                                     )}
                                 </div>
@@ -233,9 +224,8 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
 
                     <div style={{ display: 'flex', gap: '24px', marginTop: '24px' }}>
                         {[
-                            { color: '#10b981', label: '100% completed' },
-                            { color: '#f59e0b', label: 'Under required' },
-                            { color: '#94a3b8', label: 'Half day / Leave' },
+                            { color: '#10b981', label: 'Present' },
+                            { color: '#94a3b8', label: 'Absent / Leave' },
                             { color: '#a855f7', label: 'Public Holiday' }
                         ].map(item => (
                             <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -252,7 +242,7 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error }) => {
 };
 const DashboardHome = ({ data, handleCheckIn, handleCheckOut, error }) => {
     const { user } = useAuth();
-    const { timesheets, leaves, holidays } = data;
+    const { timesheets, leaves, holidays, attendanceHistory } = data;
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -326,8 +316,8 @@ const DashboardHome = ({ data, handleCheckIn, handleCheckOut, error }) => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
                     {[
-                        { label: 'Present Days', value: timesheets.length, icon: Check, color: '#10b981', bg: '#ecfdf5' },
-                        { label: 'Total Hours', value: `${timesheets.reduce((acc, curr) => acc + (curr.hours || 0), 0)}h`, icon: Briefcase, color: '#3b82f6', bg: '#eff6ff' }
+                        { label: 'Present Days', value: attendanceHistory.length, icon: Check, color: '#10b981', bg: '#ecfdf5' },
+                        { label: 'Logged Timesheets', value: timesheets.length, icon: Briefcase, color: '#3b82f6', bg: '#eff6ff' }
                     ].map((stat, i) => (
                         <div key={i} className="card" style={{ padding: '24px', background: '#ffffff', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
                             <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, marginBottom: '16px' }}>
@@ -357,7 +347,7 @@ const DashboardHome = ({ data, handleCheckIn, handleCheckOut, error }) => {
                                         <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{ts.module} • {ts.phase}</p>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>{ts.hours}h</p>
+                                        <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>Logged</p>
                                         <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{new Date(ts.date).toLocaleDateString()}</p>
                                     </div>
                                 </div>
@@ -396,9 +386,7 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
         project: '',
         module: '',
         phase: '',
-        date: new Date().toISOString().split('T')[0],
-        hours: '',
-        comment: ''
+        date: new Date().toISOString().split('T')[0]
     });
     const [status, setStatus] = useState({ type: '', msg: '' });
 
@@ -414,9 +402,7 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
                 project: '',
                 module: '',
                 phase: '',
-                date: new Date().toISOString().split('T')[0],
-                hours: '',
-                comment: ''
+                date: new Date().toISOString().split('T')[0]
             });
             setShowForm(false);
             fetchDashboardData();
@@ -447,7 +433,7 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
                         className="card"
                         style={{ padding: '24px', background: 'white', overflow: 'hidden' }}
                     >
-                        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                             <div>
                                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '8px' }}>Project Name</label>
                                 <input required type="text" value={formData.project} onChange={e => setFormData({ ...formData, project: e.target.value })} placeholder="e.g. Website Redesign" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-subtle)' }} />
@@ -464,20 +450,7 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
                                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '8px' }}>Date</label>
                                 <input required type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-subtle)' }} />
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '8px' }}>Hours</label>
-                                <input required type="number" step="0.5" value={formData.hours} onChange={e => setFormData({ ...formData, hours: e.target.value })} placeholder="8" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-subtle)' }} />
-                            </div>
-                            <div style={{ gridColumn: 'span 3' }}>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '8px' }}>Comment (Optional)</label>
-                                <textarea
-                                    value={formData.comment}
-                                    onChange={e => setFormData({ ...formData, comment: e.target.value })}
-                                    placeholder="Add any additional notes here..."
-                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-subtle)', resize: 'vertical', minHeight: '80px' }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'flex-end', gridColumn: 'span 3' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-end', gridColumn: 'span 2' }}>
                                 <button type="submit" className="btn-primary" style={{ width: '100%', padding: '12px', borderRadius: '8px', fontWeight: '700' }}>Submit Entry</button>
                             </div>
                         </form>
@@ -498,12 +471,9 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
                             <div style={{ flex: 1 }}>
                                 <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>{ts.project}</p>
                                 <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{ts.module} • {ts.phase}</p>
-                                {ts.comment && (
-                                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '8px', fontStyle: 'italic', paddingLeft: '8px', borderLeft: '2px solid #e2e8f0' }}>" {ts.comment} "</p>
-                                )}
                             </div>
                             <div style={{ textAlign: 'right', marginRight: '40px' }}>
-                                <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>{ts.hours} Hours</p>
+                                <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>Date</p>
                                 <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{new Date(ts.date).toLocaleDateString()}</p>
                             </div>
                             <span style={{

@@ -601,11 +601,10 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
 
     // Summary calculations with dynamic accrual based on DOJ (2 days per month)
     const getAccruedLeave = () => {
-        if (!user?.doj) return (new Date().getMonth() + 1) * 2;
-        const dojParts = user.doj.split('-'); // Logic assuming YYYY-MM-DD
-        const doj = new Date(dojParts[0], dojParts[1] - 1, 1); // Start of joining month
+        if (!user?.createdAt) return 0;
+        const createdDate = new Date(user.createdAt);
         const now = new Date();
-        const months = (now.getFullYear() - doj.getFullYear()) * 12 + (now.getMonth() - doj.getMonth()) + 1;
+        const months = (now.getFullYear() - createdDate.getFullYear()) * 12 + (now.getMonth() - createdDate.getMonth());
         return Math.max(0, months * 2);
     };
 

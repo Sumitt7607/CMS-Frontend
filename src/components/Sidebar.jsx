@@ -55,8 +55,8 @@ const Sidebar = ({ activeTab, setActiveTab, onClose }) => {
     src="/c60e662c-d159-4b54-b83e-50ed164cd42c.jpg" 
     alt="logo"
     style={{ 
-        height: '36px',
-        width: 'auto',
+        height: '90px',
+        width: '200px',
         objectFit: 'contain'
     }} 
 />

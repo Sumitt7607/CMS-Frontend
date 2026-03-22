@@ -429,7 +429,6 @@ const DashboardHome = ({ data, handleCheckIn, handleCheckOut, error, viewDate, h
 const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) => {
     const { token } = useAuth();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
- 
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({
         project: '',
@@ -460,28 +459,19 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
         }
     };
 
-
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>My Timesheet</h2>
+                <button
+                    onClick={() => setShowForm(!showForm)}
+                    className="btn-primary"
+                    style={{ padding: '10px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                    <Plus size={18} /> {showForm ? 'Cancel' : 'Add Entry'}
+                </button>
+            </div>
 
-    <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>
-        My Timesheet
-    </h2>
-
-
-
-        {/* 👉 ye important hai (Add Entry button wapas lagana) */}
-        <button
-            onClick={() => setShowForm(!showForm)}
-            className="btn-primary"
-            style={{ padding: '10px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-            <Plus size={18} />
-            {showForm ? 'Cancel' : 'Add Entry'}
-        </button>
-    </div>
-</div>
             <AnimatePresence>
                 {showForm && (
                     <motion.div
@@ -524,7 +514,7 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
 
             <div className="card" style={{ padding: '32px', borderRadius: '24px', background: 'white' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  timesheets.map((ts, i) => (
+                    {timesheets.map((ts, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '20px', background: '#f8fafc', borderRadius: '16px', border: '1px solid var(--border)' }}>
                             <div style={{ flex: 1 }}>
                                 <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>{ts.project}</p>

@@ -49,8 +49,20 @@ const Sidebar = ({ activeTab, setActiveTab, onClose }) => {
         }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', paddingLeft: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: 'var(--primary)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-    <BarChart3 size={18} />
+<div style={{ 
+    width: '32px', 
+    height: '32px', 
+    borderRadius: '8px', 
+    overflow: 'hidden',
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center'
+}}>
+    <img 
+        src="/c60e662c-d159-4b54-b83e-50ed164cd42c.jpg" 
+        alt="logo" 
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+    />
 </div>
                     <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>CMS <span style={{ color: 'var(--primary)' }}>{user?.role === 'admin' ? 'Admin' : 'Cloud'}</span></h2>
                 </div>

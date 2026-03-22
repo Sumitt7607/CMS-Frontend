@@ -49,22 +49,18 @@ const Sidebar = ({ activeTab, setActiveTab, onClose }) => {
         }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', paddingLeft: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-<div style={{ 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '10px' 
-}}>
-    <img 
-        src="/c60e662c-d159-4b54-b83e-50ed164cd42c.jpg" 
-        alt="logo"
-        style={{ 
-            height: '28px', 
-            width: 'auto', 
-            objectFit: 'contain'
-        }} 
-    />
-</div>
-                    <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>CMS <span style={{ color: 'var(--primary)' }}>{user?.role === 'admin' ? 'Admin' : 'Cloud'}</span></h2>
+
+                    {/* 🔥 ONLY LOGO (TEXT REMOVED) */}
+                    <img 
+                        src="/c60e662c-d159-4b54-b83e-50ed164cd42c.jpg" 
+                        alt="logo"
+                        style={{ 
+                            height: '32px', 
+                            width: 'auto', 
+                            objectFit: 'contain'
+                        }} 
+                    />
+
                 </div>
                 
                 {onClose && (

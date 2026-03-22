@@ -429,6 +429,8 @@ const DashboardHome = ({ data, handleCheckIn, handleCheckOut, error, viewDate, h
 const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) => {
     const { token } = useAuth();
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({
         project: '',
@@ -459,19 +461,59 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
         }
     };
 
+    const filteredTimesheets = timesheets.filter(ts => {
+    const tsDate = new Date(ts.date);
+
+    const matchesStart = startDate ? tsDate >= new Date(startDate) : true;
+    const matchesEnd = endDate ? tsDate <= new Date(endDate) : true;
+
+    return matchesStart && matchesEnd;
+});
+
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>My Timesheet</h2>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="btn-primary"
-                    style={{ padding: '10px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                    <Plus size={18} /> {showForm ? 'Cancel' : 'Add Entry'}
-                </button>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
 
+    <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>
+        My Timesheet
+    </h2>
+
+    <div style={{ display: 'flex', gap: '10px' }}>
+        <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--border)' }}
+        />
+
+        <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--border)' }}
+        />
+
+        <button
+            onClick={() => {
+                setStartDate('');
+                setEndDate('');
+            }}
+            style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}
+        >
+            Clear
+        </button>
+
+        {/* 👉 ye important hai (Add Entry button wapas lagana) */}
+        <button
+            onClick={() => setShowForm(!showForm)}
+            className="btn-primary"
+            style={{ padding: '10px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+            <Plus size={18} />
+            {showForm ? 'Cancel' : 'Add Entry'}
+        </button>
+    </div>
+</div>
             <AnimatePresence>
                 {showForm && (
                     <motion.div
@@ -514,7 +556,7 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
 
             <div className="card" style={{ padding: '32px', borderRadius: '24px', background: 'white' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {timesheets.map((ts, i) => (
+                  filteredTimesheets.map((ts, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '20px', background: '#f8fafc', borderRadius: '16px', border: '1px solid var(--border)' }}>
                             <div style={{ flex: 1 }}>
                                 <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>{ts.project}</p>

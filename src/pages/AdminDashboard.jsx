@@ -89,7 +89,7 @@ const AdminDashboard = () => {
         alt="logo"
         style={{ 
             height: '32px',
-            width: 'auto',
+            width: '40px',
             objectFit: 'contain'
         }} 
     />

@@ -51,16 +51,15 @@ const Sidebar = ({ activeTab, setActiveTab, onClose }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
 
                     {/* 🔥 ONLY LOGO (TEXT REMOVED) */}
-                    <img 
-                        src="/c60e662c-d159-4b54-b83e-50ed164cd42c.jpg" 
-                        alt="logo"
-                        style={{ 
-                            height: '32px', 
-                            width: 'auto', 
-                            objectFit: 'contain'
-                        }} 
-                    />
-
+                <img 
+    src="/c60e662c-d159-4b54-b83e-50ed164cd42c.jpg" 
+    alt="logo"
+    style={{ 
+        height: '36px',
+        width: 'auto',
+        objectFit: 'contain'
+    }} 
+/>
                 </div>
                 
                 {onClose && (

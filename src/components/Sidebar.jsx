@@ -8,12 +8,13 @@ import {
     Users,
     LogOut,
     ChevronRight,
-    BarChart3
+    BarChart3,
+    X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ activeTab, setActiveTab }) => {
+const Sidebar = ({ activeTab, setActiveTab, onClose }) => {
     const { logout, user } = useAuth();
     const navigate = useNavigate();
 
@@ -34,12 +35,31 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     ];
 
     return (
-        <div className="card" style={{ width: '280px', height: 'calc(100vh - 32px)', margin: '16px', display: 'flex', flexDirection: 'column', padding: '24px', position: 'sticky', top: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', paddingLeft: '8px' }}>
-                <div style={{ background: 'var(--primary)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                    <BarChart3 size={18} />
+        <div className="card sidebar-container" style={{ 
+            width: '280px', 
+            height: 'calc(100vh - 32px)', 
+            margin: '16px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            padding: '24px', 
+            position: 'sticky', 
+            top: '16px',
+            zIndex: 1000,
+            transition: 'transform 0.3s ease'
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', paddingLeft: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ background: 'var(--primary)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                        <BarChart3 size={18} />
+                    </div>
+                    <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>CMS <span style={{ color: 'var(--primary)' }}>{user?.role === 'admin' ? 'Admin' : 'Cloud'}</span></h2>
                 </div>
-                <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>CMS <span style={{ color: 'var(--primary)' }}>{user?.role === 'admin' ? 'Admin' : 'Cloud'}</span></h2>
+                
+                {onClose && (
+                    <button onClick={onClose} className="mobile-only" style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}>
+                        <X size={20} />
+                    </button>
+                )}
             </div>
 
             <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>

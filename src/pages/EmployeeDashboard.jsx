@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { Clock, CheckCircle, Calendar, Briefcase, CreditCard, Check, AlertCircle, ChevronRight, LayoutGrid, FileText, Gift, Plus, ChevronLeft } from 'lucide-react';
+import { Clock, CheckCircle, Calendar, Briefcase, CreditCard, Check, AlertCircle, ChevronRight, LayoutGrid, FileText, Gift, Plus, ChevronLeft, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const formatCurrency = (amount) => {
@@ -601,11 +601,10 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
 
     // Summary calculations with dynamic accrual based on DOJ (2 days per month)
     const getAccruedLeave = () => {
-        if (!user?.doj) return (new Date().getMonth() + 1) * 2;
-        const dojParts = user.doj.split('-'); // Logic assuming YYYY-MM-DD
-        const doj = new Date(dojParts[0], dojParts[1] - 1, 1); // Start of joining month
+        if (!user?.createdAt) return 0;
+        const createdDate = new Date(user.createdAt);
         const now = new Date();
-        const months = (now.getFullYear() - doj.getFullYear()) * 12 + (now.getMonth() - doj.getMonth()) + 1;
+        const months = (now.getFullYear() - createdDate.getFullYear()) * 12 + (now.getMonth() - createdDate.getMonth());
         return Math.max(0, months * 2);
     };
 
@@ -880,6 +879,7 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
 
 const EmployeeDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [time, setTime] = useState(new Date().toLocaleTimeString());
     const [attendance, setAttendance] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -1044,21 +1044,81 @@ const EmployeeDashboard = () => {
     );
 
     return (
-        <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-subtle)', overflow: 'hidden' }}>
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-            <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
-                <AnimatePresence mode="wait">
+        <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-subtle)', position: 'relative', overflow: 'hidden' }}>
+            {/* Mobile Sidebar Overlay */}
+            <AnimatePresence>
+                {isSidebarOpen && (
                     <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.2 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsSidebarOpen(false)}
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'rgba(0,0,0,0.3)',
+                            backdropFilter: 'blur(4px)',
+                            zIndex: 999
+                        }}
+                        className="mobile-only"
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* Adjusted Sidebar for Responsiveness */}
+            <div style={{
+                position: 'relative',
+                zIndex: 1000,
+                display: 'flex',
+                transition: 'transform 0.3s ease'
+            }} className={isSidebarOpen ? '' : 'desktop-only'}>
+                <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setIsSidebarOpen(false); }} onClose={() => setIsSidebarOpen(false)} />
+            </div>
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+                {/* Mobile Header */}
+                <header className="mobile-only" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px 24px',
+                    background: 'white',
+                    borderBottom: '1px solid var(--border)',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 900
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ background: 'var(--primary)', width: '28px', height: '28px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                            <LayoutGrid size={16} />
+                        </div>
+                        <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>CMS Cloud</h2>
+                    </div>
+                    <button 
+                        onClick={() => setIsSidebarOpen(true)}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}
                     >
-                        {renderContent()}
-                    </motion.div>
-                </AnimatePresence>
-            </main>
+                        <Menu size={24} />
+                    </button>
+                </header>
+
+                <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {renderContent()}
+                        </motion.div>
+                    </AnimatePresence>
+                </main>
+            </div>
         </div>
     );
 };

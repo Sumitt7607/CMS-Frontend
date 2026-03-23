@@ -19,6 +19,7 @@ const AdminPayroll = () => {
         year: new Date().getFullYear(),
         base: 0,
         bonus: 0,
+        extraDays: 0,
         tax: 0,
         deductions: 0
     });
@@ -110,7 +111,27 @@ const AdminPayroll = () => {
         const newMonth = type === 'month' ? value : formData.month;
         const newYear = type === 'year' ? value : formData.year;
         const ded = calculateAutoDeduction(formData.userId, newMonth, newYear);
-        setFormData({ ...formData, month: newMonth, year: newYear, deductions: ded });
+        
+        // Recalculate bonus if extraDays exists
+        let newBonus = formData.bonus;
+        if (formData.userId && formData.extraDays > 0) {
+            const daysInMonth = new Date(newYear, newMonth + 1, 0).getDate();
+            newBonus = Math.round((formData.base / daysInMonth) * formData.extraDays);
+        }
+
+        setFormData({ ...formData, month: newMonth, year: newYear, deductions: ded, bonus: newBonus });
+    };
+
+    const handleExtraDaysChange = (days) => {
+        const extraDays = Number(days);
+        let bonus = formData.bonus;
+        
+        if (formData.userId && extraDays >= 0) {
+            const daysInMonth = new Date(formData.year, formData.month + 1, 0).getDate();
+            bonus = Math.round((formData.base / daysInMonth) * extraDays);
+        }
+        
+        setFormData({ ...formData, extraDays, bonus });
     };
 
     const handleSubmit = async (e) => {
@@ -131,6 +152,7 @@ const AdminPayroll = () => {
                 year: new Date().getFullYear(),
                 base: 0,
                 bonus: 0,
+                extraDays: 0,
                 tax: 0,
                 deductions: 0
             });
@@ -343,6 +365,16 @@ const AdminPayroll = () => {
                                                 />
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                <label style={{ fontSize: '11px', fontWeight: '700', color: '#64748b' }}>EXTRA DAYS</label>
+                                                <input
+                                                    type="number"
+                                                    className="input-field"
+                                                    value={formData.extraDays}
+                                                    onChange={(e) => handleExtraDaysChange(e.target.value)}
+                                                    style={{ background: 'white', borderRadius: '14px', height: '48px', border: '1px solid #dcfce7', fontWeight: '700', color: '#16a34a' }}
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                 <label style={{ fontSize: '11px', fontWeight: '700', color: '#64748b' }}>BONUS (₹)</label>
                                                 <input
                                                     type="number"
@@ -351,6 +383,11 @@ const AdminPayroll = () => {
                                                     onChange={(e) => setFormData({ ...formData, bonus: Number(e.target.value) })}
                                                     style={{ background: 'white', borderRadius: '14px', height: '48px', border: '1px solid #dcfce7', fontWeight: '700', color: '#16a34a' }}
                                                 />
+                                                {formData.extraDays > 0 && (
+                                                    <p style={{ margin: 0, fontSize: '10px', color: '#16a34a', fontStyle: 'italic', marginTop: '4px' }}>
+                                                        Auto-calculated from {formData.extraDays} extra days
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -522,7 +559,10 @@ const AdminPayroll = () => {
                                         <span style={{ color: '#1e293b', fontSize: '14px', fontWeight: '600' }}>₹{(payroll.base || 0).toLocaleString()}</span>
                                     </td>
                                     <td style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
-                                        <span style={{ color: '#16a34a', fontWeight: '700', fontSize: '14px' }}>+₹{(payroll.bonus || 0).toLocaleString()}</span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                            <span style={{ color: '#16a34a', fontWeight: '700', fontSize: '14px' }}>+₹{(payroll.bonus || 0).toLocaleString()}</span>
+                                            {payroll.extraDays > 0 && <span style={{ color: '#64748b', fontSize: '11px' }}>({payroll.extraDays} Extra Days)</span>}
+                                        </div>
                                     </td>
                                     <td style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>

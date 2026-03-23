@@ -1,3 +1,5 @@
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import { useState, useEffect } from 'react';
 import { Search, Plus, Check, X, Filter, MoreHorizontal, Clock, AlertCircle, Calendar, Briefcase, Tag, Hash } from 'lucide-react';
 import axios from 'axios';
@@ -102,6 +104,35 @@ const AdminTimesheet = () => {
         }
     };
 
+
+const exportToExcel = () => {
+    const data = filteredEntries.map(entry => ({
+        Employee: entry.userId?.name || "Unknown",
+        Project: entry.project,
+        Module: entry.module,
+        Phase: entry.phase,
+        Date: entry.date,
+        Status: entry.status
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Timesheets");
+
+    const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array"
+    });
+
+    const fileData = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+
+    saveAs(fileData, "Timesheets.xlsx");
+};
+    
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -121,6 +152,14 @@ const AdminTimesheet = () => {
                         />
                     </div>
                 </div>
+
+                <button
+    onClick={exportToExcel}
+    className="btn-primary"
+    style={{ padding: '10px 20px', borderRadius: '10px' }}
+>
+    Export Excel
+</button>
 
                 <button onClick={() => setIsModalOpen(true)} className="btn-primary" style={{ padding: '10px 20px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Plus size={18} />

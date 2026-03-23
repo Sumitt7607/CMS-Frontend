@@ -79,12 +79,21 @@ const AdminDashboard = () => {
                     top: 0,
                     zIndex: 900
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ background: 'var(--primary)', width: '28px', height: '28px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                            <Menu size={16} />
-                        </div>
-                        <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>CMS Admin</h2>
-                    </div>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <div style={{ background: 'var(--primary)', width: '28px', height: '28px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+        <Menu size={16} />
+    </div>
+
+    <img 
+        src="/c60e662c-d159-4b54-b83e-50ed164cd42c.jpg" 
+        alt="logo"
+        style={{ 
+            height: '80px',
+            width: '200px',
+            objectFit: 'contain'
+        }} 
+    />
+</div>
                     <button 
                         onClick={() => setIsSidebarOpen(true)}
                         style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}

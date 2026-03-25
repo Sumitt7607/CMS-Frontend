@@ -85,9 +85,17 @@ const AttendanceTracker = ({ data, handleCheckIn, handleCheckOut, error, viewDat
         if (attendance?.checkIn && !attendance?.checkOut) {
             interval = setInterval(() => {
                 const now = new Date();
-                const [h, m, s] = attendance.checkIn.split(':').map(Number);
-                const checkInDate = new Date();
-                checkInDate.setHours(h, m, s, 0);
+                let checkInDate;
+
+                if (attendance.checkIn.includes('T')) {
+                    // New ISO format
+                    checkInDate = new Date(attendance.checkIn);
+                } else {
+                    // Legacy HH:MM:SS format
+                    const [h, m, s] = attendance.checkIn.split(':').map(Number);
+                    checkInDate = new Date();
+                    checkInDate.setHours(h, m, s, 0);
+                }
 
                 const diff = now - checkInDate;
                 if (diff > 0) {
@@ -562,10 +570,10 @@ const TimesheetView = ({ timesheets, attendanceHistory, fetchDashboardData }) =>
                                         {new Date(record.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                                     </td>
                                     <td style={{ padding: '20px 32px', fontSize: '14px', color: '#16a34a', fontWeight: '700' }}>
-                                        {record.checkIn || '--:--'}
+                                        {record.checkIn ? (record.checkIn.includes('T') ? new Date(record.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : record.checkIn) : '--:--'}
                                     </td>
                                     <td style={{ padding: '20px 32px', fontSize: '14px', color: '#dc2626', fontWeight: '700' }}>
-                                        {record.checkOut || '--:--'}
+                                        {record.checkOut ? (record.checkOut.includes('T') ? new Date(record.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : record.checkOut) : '--:--'}
                                     </td>
                                     <td style={{ padding: '20px 32px' }}>
                                         <span style={{

@@ -86,13 +86,13 @@ const AdminAttendance = () => {
                                         <td style={{ padding: '16px 24px', color: 'var(--text-main)', fontSize: '14px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <Clock size={14} color="#16a34a" />
-                                                {record.checkIn || '--:--'}
+                                                {record.checkIn ? (record.checkIn.includes('T') ? new Date(record.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : record.checkIn) : '--:--'}
                                             </div>
                                         </td>
                                         <td style={{ padding: '16px 24px', color: 'var(--text-main)', fontSize: '14px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <Clock size={14} color="#dc2626" />
-                                                {record.checkOut || '--:--'}
+                                                {record.checkOut ? (record.checkOut.includes('T') ? new Date(record.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : record.checkOut) : '--:--'}
                                             </div>
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>

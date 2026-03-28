@@ -8,6 +8,7 @@ const AdminPayroll = () => {
     const [payrolls, setPayrolls] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [leaves, setLeaves] = useState([]);
+    const [holidays, setHolidays] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -33,14 +34,16 @@ const AdminPayroll = () => {
 
     const fetchData = async () => {
         try {
-            const [payrollRes, employeeRes, leaveRes] = await Promise.all([
+            const [payrollRes, employeeRes, leaveRes, holidayRes] = await Promise.all([
                 axios.get(`${API_URL}/payroll/all`, { headers: { Authorization: `Bearer ${token}` } }),
                 axios.get(`${API_URL}/employees`, { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get(`${API_URL}/leaves/all`, { headers: { Authorization: `Bearer ${token}` } })
+                axios.get(`${API_URL}/leaves/all`, { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get(`${API_URL}/holidays`, { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setPayrolls(payrollRes.data);
             setEmployees(employeeRes.data.filter(emp => emp.role === 'employee'));
             setLeaves(leaveRes.data);
+            setHolidays(holidayRes.data);
             setLoading(false);
         } catch (err) {
             console.error('Error fetching payroll data:', err);
@@ -71,7 +74,7 @@ const AdminPayroll = () => {
             l.type === 'Unpaid Leave'
         );
 
-        let unpaidDays = 0;
+        let unpaidValue = 0;
         const monthIndex = parseInt(mIndex);
         const year = parseInt(yr);
 
@@ -79,17 +82,26 @@ const AdminPayroll = () => {
             const start = new Date(leave.startDate);
             const end = new Date(leave.endDate);
 
-            // Check if leave overlaps with the selected month/year
-            if (start.getMonth() === monthIndex && start.getFullYear() === year) {
-                const diffTime = Math.abs(end - start);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                unpaidDays += diffDays;
+            // Iterate through each day of the leave
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                // Only count if it's in the target month/year
+                if (d.getMonth() === monthIndex && d.getFullYear() === year) {
+                    const dateStr = d.toISOString().split('T')[0];
+                    const holiday = holidays.find(h => h.date === dateStr);
+
+                    if (holiday) {
+                        if (holiday.type === 'Half Day') unpaidValue += 0.5;
+                    } else {
+                        if (leave.dayType === 'Half Day') unpaidValue += 0.5;
+                        else unpaidValue += 1;
+                    }
+                }
             }
         });
 
-        if (unpaidDays > 0) {
+        if (unpaidValue > 0) {
             const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-            const deduction = ((selectedEmp.baseSalary || 0) / daysInMonth) * unpaidDays;
+            const deduction = ((selectedEmp.baseSalary || 0) / daysInMonth) * unpaidValue;
             return Math.round(deduction);
         }
         return 0;
@@ -425,15 +437,24 @@ const AdminPayroll = () => {
                                                                 l.status === 'Approved' &&
                                                                 l.type === 'Unpaid Leave'
                                                             );
-                                                            let unpaidDays = 0;
+                                                            let unpaidValue = 0;
                                                             approvedLeaves.forEach(leave => {
                                                                 const start = new Date(leave.startDate);
-                                                                if (start.getMonth() === formData.month && start.getFullYear() === formData.year) {
-                                                                    const diffTime = Math.abs(new Date(leave.endDate) - start);
-                                                                    unpaidDays += Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                                                                const end = new Date(leave.endDate);
+                                                                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                                                                    if (d.getMonth() === formData.month && d.getFullYear() === formData.year) {
+                                                                        const dateStr = d.toISOString().split('T')[0];
+                                                                        const holiday = holidays.find(h => h.date === dateStr);
+                                                                        if (holiday) {
+                                                                            if (holiday.type === 'Half Day') unpaidValue += 0.5;
+                                                                        } else {
+                                                                            if (leave.dayType === 'Half Day') unpaidValue += 0.5;
+                                                                            else unpaidValue += 1;
+                                                                        }
+                                                                    }
                                                                 }
                                                             });
-                                                            return unpaidDays > 0 ? `Found ${unpaidDays} unpaid days (Logic: (Base/DaysInMonth) * Days)` : 'No approved unpaid leaves found for this period.';
+                                                            return unpaidValue > 0 ? `Found ${unpaidValue} unpaid days (Logic: (Base/DaysInMonth) * Days, accounts for holidays)` : 'No approved unpaid leaves found for this period.';
                                                         })()}
                                                     </p>
                                                 )}

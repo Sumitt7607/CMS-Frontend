@@ -618,18 +618,19 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
 
     const accruedPaidLeave = getAccruedLeave();
 
-    const calculateDuration = (start, end) => {
+    const calculateDuration = (start, end, dayType = 'Full Day') => {
         if (!start || !end) return 0;
         const s = new Date(start);
         const e = new Date(end);
         if (isNaN(s) || isNaN(e)) return 0;
         const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
-        return diff > 0 ? diff : 0;
+        if (diff <= 0) return 0;
+        return dayType === 'Half Day' ? diff * 0.5 : diff;
     };
 
     const rawPaidLeavesUsed = leaves
         .filter(l => l.type === 'Paid Leave' && l.status === 'Approved')
-        .reduce((sum, l) => sum + calculateDuration(l.startDate, l.endDate), 0);
+        .reduce((sum, l) => sum + calculateDuration(l.startDate, l.endDate, l.dayType), 0);
 
     const paidLeavesUsedDisplay = Math.min(rawPaidLeavesUsed, accruedPaidLeave);
     const paidLeavesRemaining = Math.max(0, accruedPaidLeave - rawPaidLeavesUsed);
@@ -639,6 +640,7 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
         startDate: '',
         endDate: '',
         type: 'Paid Leave',
+        dayType: 'Full Day',
         reason: ''
     });
 
@@ -654,12 +656,12 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
         { label: 'Paid Leave', used: paidLeavesUsedDisplay, limit: accruedPaidLeave },
     ];
 
-    // Update form type if paid leaves run out
+    // Update form type if paid leaves run out or if the current type is invalid
     useEffect(() => {
         if (paidLeavesRemaining <= 0 && leaveForm.type === 'Paid Leave') {
             setLeaveForm(prev => ({ ...prev, type: 'Unpaid Leave' }));
         }
-    }, [paidLeavesRemaining]);
+    }, [paidLeavesRemaining, leaveForm.type]);
 
     const handleSubmit = async (formData) => {
         setStatus({ type: '', msg: '' });
@@ -673,7 +675,7 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
             }
 
             // Paid Leave Balance Validation
-            const duration = calculateDuration(payload.startDate, payload.endDate);
+            const duration = calculateDuration(payload.startDate, payload.endDate, payload.dayType);
             if (payload.type === 'Paid Leave' && duration > paidLeavesRemaining) {
                 setStatus({ type: 'error', msg: `Insufficient Paid Leave balance. You only have ${paidLeavesRemaining} day(s) left. Please apply for excess days as Unpaid Leave.` });
                 return;
@@ -684,7 +686,7 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
             });
             setStatus({ type: 'success', msg: 'Leave applied successfully!' });
             fetchDashboardData();
-            setLeaveForm({ startDate: '', endDate: '', type: 'Paid Leave', reason: '' });
+            setLeaveForm({ startDate: '', endDate: '', type: 'Paid Leave', dayType: 'Full Day', reason: '' });
         } catch (err) {
             setStatus({ type: 'error', msg: err.response?.data?.message || 'Submission failed' });
         }
@@ -748,7 +750,7 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '24px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '24px' }}>
                         <div>
                             <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.025em' }}>From Date</label>
                             <input type="date" value={leaveForm.startDate} onChange={e => setLeaveForm({ ...leaveForm, startDate: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: '#f8fafc', fontSize: '14px', fontWeight: '500' }} />
@@ -760,8 +762,15 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
                         <div>
                             <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.025em' }}>Leave Type</label>
                             <select value={leaveForm.type} onChange={e => setLeaveForm({ ...leaveForm, type: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: '#f8fafc', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
-                                {paidLeavesRemaining > 0 && <option value="Paid Leave">Paid Leave</option>}
+                                <option value="Paid Leave" disabled={paidLeavesRemaining <= 0}>Paid Leave ({paidLeavesRemaining} left)</option>
                                 <option value="Unpaid Leave">Unpaid Leave</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.025em' }}>Day Type</label>
+                            <select value={leaveForm.dayType} onChange={e => setLeaveForm({ ...leaveForm, dayType: e.target.value })} style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)', background: '#f8fafc', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
+                                <option value="Full Day">Full Day</option>
+                                <option value="Half Day">Half Day</option>
                             </select>
                         </div>
                     </div>
@@ -774,7 +783,7 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary)' }}>
                             {leaveForm.startDate && leaveForm.endDate && (
-                                <span>Duration: {calculateDuration(leaveForm.startDate, leaveForm.endDate)} day(s)</span>
+                                <span>Duration: {calculateDuration(leaveForm.startDate, leaveForm.endDate, leaveForm.dayType)} day(s)</span>
                             )}
                         </div>
                         <button onClick={() => handleSubmit(leaveForm)} className="btn-primary" style={{ padding: '14px 40px', borderRadius: '12px', fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -859,7 +868,10 @@ const LeaveView = ({ leaves, fetchDashboardData }) => {
                                         <td style={{ padding: '20px 32px', fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>{leave.type}</td>
                                         <td style={{ padding: '20px 32px', fontSize: '14px', color: 'var(--text-muted)' }}>{start.toLocaleDateString()}</td>
                                         <td style={{ padding: '20px 32px', fontSize: '14px', color: 'var(--text-muted)' }}>{end.toLocaleDateString()}</td>
-                                        <td style={{ padding: '20px 32px', fontSize: '14px', color: 'var(--text-main)', fontWeight: '600' }}>{duration} day(s)</td>
+                                        <td style={{ padding: '20px 32px', fontSize: '14px', color: 'var(--text-main)', fontWeight: '600' }}>
+                                            {calculateDuration(leave.startDate, leave.endDate, leave.dayType)} day(s)
+                                            {leave.dayType === 'Half Day' && <span style={{ fontSize: '10px', marginLeft: '4px', opacity: 0.6 }}>(Half)</span>}
+                                        </td>
                                         <td style={{ padding: '20px 32px', fontSize: '14px', color: 'var(--text-muted)' }}>{leave.reason}</td>
                                         <td style={{ padding: '20px 32px' }}>
                                             <span style={{

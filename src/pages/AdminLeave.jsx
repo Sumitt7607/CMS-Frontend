@@ -40,12 +40,12 @@ const AdminLeave = () => {
         }
     };
 
-    const calculateDuration = (start, end) => {
+    const calculateDuration = (start, end, dayType = 'Full Day') => {
         const s = new Date(start);
         const e = new Date(end);
         const diffTime = Math.abs(e - s);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        return `${diffDays} day(s)`;
+        return dayType === 'Half Day' ? '0.5 day(s)' : `${diffDays} day(s)`;
     };
 
     const getStatusStyle = (status) => {
@@ -82,6 +82,7 @@ const AdminLeave = () => {
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Employee</th>
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Leave Date</th>
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Type</th>
+                                <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Day Type</th>
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Duration</th>
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Reason</th>
                                 <th style={{ padding: '16px 24px', fontWeight: '600', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
@@ -105,7 +106,17 @@ const AdminLeave = () => {
                                             <span style={{ color: '#64748b', fontSize: '14px' }}>{leave.type}</span>
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>
-                                            <span style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>{calculateDuration(leave.startDate, leave.endDate)}</span>
+                                            <span style={{ 
+                                                background: leave.dayType === 'Half Day' ? '#fef3c7' : '#f1f5f9',
+                                                color: leave.dayType === 'Half Day' ? '#b45309' : '#475569',
+                                                padding: '4px 8px',
+                                                borderRadius: '6px',
+                                                fontSize: '12px',
+                                                fontWeight: '600'
+                                            }}>{leave.dayType || 'Full Day'}</span>
+                                        </td>
+                                        <td style={{ padding: '16px 24px' }}>
+                                            <span style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>{calculateDuration(leave.startDate, leave.endDate, leave.dayType)}</span>
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>
                                             <span style={{ color: '#64748b', fontSize: '14px' }}>{leave.reason}</span>
